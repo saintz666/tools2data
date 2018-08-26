@@ -39,19 +39,30 @@ def main():
         print "Init files"
         output_list=[]
         for x in xrange(len(fi)):
-            mail = fi[x].replace("\n","").replace("\x00","").replace("\000","").rstrip(' \t\r\n\0').strip()
+            password = ""
+            mail = str(fi[x]).decode('utf8').encode('ascii', errors='ignore')
+            mail = mail.replace("\n","").replace("\x00","").replace("\000","").rstrip(' \t\r\n\0').strip()
             outputss = db.creddump.find({"mail":mail})
             if outputss:
-                for xx in outputss:
-                    out = "%s,%s\n" % (xx['mail'],xx['pass'])
-                    fo.write(out)
+                try:
+                    for xx in outputss:
 
-            #if outputss == 0:
-            ##    out = mail+',N/A\n'
-            #    fo.write(out)
-            #else:
-            #    out = mail+',Found\n'
-            #    fo.write(out)
+                        #password = str(xx['pass']).decode('utf8').encode('ascii', errors='ignore')
+                        #print password
+                        password = str(xx['pass']).decode('utf8').encode('ascii', errors='ignore')
+                        #password = unicode(password, errors='ignore')
+                        #password = password.replace("\n","").replace("\x00","").replace("\000","").rstrip(' \t\r\n\0').strip()
+                        out = "%s,%s\n" % (mail,password)
+                        fo.write(out)
+                except Exception, err:
+                    print "Unexpected error:", sys.exc_info()[0]
+                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                    print(exc_type, fname, exc_tb.tb_lineno)
+                    print err
+                    print mail
+                    print password
+                    
 
         fo.close()
         logging.info("Completed %s of query in %s seconds",len(output_list),time.time()-timer)
@@ -64,5 +75,5 @@ def main():
 
 if __name__ == "__main__":
    main()
- 
+
 
